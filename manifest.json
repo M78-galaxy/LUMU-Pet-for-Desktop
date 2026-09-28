@@ -1,0 +1,9 @@
+{
+    "id": "obsidian-pet",
+    "name": "Desktop Pet",
+    "version": "1.0.0",
+    "minAppVersion": "1.4.0",
+    "description": "一个可以自定义外貌的桌面小宠物。",
+    "author": "galaxym78",
+    "isDesktopOnly": false
+  }

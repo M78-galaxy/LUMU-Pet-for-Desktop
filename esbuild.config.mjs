@@ -1,7 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
-import { copyFileSync, mkdirSync } from "fs";
+import { copyFileSync, mkdirSync, watch } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 
@@ -14,17 +14,24 @@ const VAULT_PLUGIN_DIR = join(
 );
 
 const copyToVault = {
-  name: "copy-to-vault",
-  setup(build) {
-    build.onEnd(() => {
-      mkdirSync(VAULT_PLUGIN_DIR, { recursive: true });
-      for (const f of ["main.js", "manifest.json", "styles.css"]) {
-        copyFileSync(f, join(VAULT_PLUGIN_DIR, f));
+    name: "copy-to-vault",
+    setup(build) {
+      const copy = () => {
+        mkdirSync(VAULT_PLUGIN_DIR, { recursive: true });
+        for (const f of ["main.js", "manifest.json", "styles.css"]) {
+          copyFileSync(f, join(VAULT_PLUGIN_DIR, f));
+        }
+        console.log("[copy] -> vault");
+      };
+      build.onEnd(copy);
+      if (!prod) {
+        // styles.css 和 manifest.json 改动也同步
+        for (const f of ["styles.css", "manifest.json"]) {
+          watch(f, () => { console.log(`[watch] ${f} changed`); copy(); });
+        }
       }
-      console.log("[copy] -> vault");
-    });
-  },
-};
+    },
+  };
 
 const context = await esbuild.context({
   entryPoints: ["main.ts"],
